@@ -11,10 +11,10 @@ public class GameManager : MonoBehaviour
 {
     public GameObject pipePrefab;
     private float pipeSpawnTimer = 2;
-    private static bool isGameOver = false;
+    public static bool isGameOver = false;
     private bool isGamePause = false;
     public GameObject gameOverPanel,gameStartPanel,pauseButton;
-    private static GameManager instance = new GameManager();
+    private static GameManager instance;
     private static int score = 0; 
     
     private void Start()
@@ -44,17 +44,16 @@ public class GameManager : MonoBehaviour
     public void OnClick()
     {
         PlayerController.Jump();
+        SoundManager.PlayJumpSound();
     }
-
-    public void MainMenuButton()
-    {
-        Application.LoadLevel("MainMenuScene");
-    }
-
+    
     public void PauseButton()
     {
-        Time.timeScale = (!isGamePause) ? 0 : 1;
-        isGamePause = !isGamePause;
+        if (!isGameOver)
+        {
+            Time.timeScale = (!isGamePause) ? 0 : 1;
+            isGamePause = !isGamePause;
+        }
     }
     public void RestartGame()
     {
@@ -66,21 +65,22 @@ public class GameManager : MonoBehaviour
 
     public static void GameOver()
     {
-        isGameOver = true;
         instance.gameOverPanel.SetActive(true);
+        isGameOver = true;
+        SoundManager.PlayGameOverSound();
+        GameUIManager.Reward(score);
         Time.timeScale = 0;
     }
 
     public static void AddScore()
     {
         score++;
-        Debug.Log(score);
         GameUIManager.AddScoreText(score);
+        SoundManager.PlayPointSound();
     }
 
     private void PipeSpawner()
     {
         Instantiate(pipePrefab, new Vector3(PlayerController.playerRigidBody.transform.position.x + 1.8f,Random.Range(-0.20f,0.75f),PlayerController.playerRigidBody.transform.position.z),quaternion.identity);
     }
-
 }
